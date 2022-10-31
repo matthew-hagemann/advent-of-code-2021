@@ -29,6 +29,8 @@ fn main() {
         .map(|v| if v.eq(&1) { 0 } else { 1 })
         .collect();
 
+    // https://doc.rust-lang.org/book/appendix-02-operators.html
+
     println!("{:?}", gamma);
     println!("{:?}", epsilon);
 }
