@@ -10,18 +10,18 @@ fn main() {
         .collect();
 
     let (gamma, epsilon) = (
-        get_rate_from_vec(input.clone(), true),
-        get_rate_from_vec(input.clone(), false),
+        get_rate_from_vec(&input, true),
+        get_rate_from_vec(&input, false),
     );
 
     println!("Part 1: {}", gamma * epsilon);
 
-    let (ogr, csr) = (find_rating(input.clone(), true), find_rating(input, false));
+    let (ogr, csr) = (find_rating(&input, true), find_rating(&input, false));
 
     println!("Part 2: {}", ogr * csr);
 }
 
-fn get_rate_from_vec(input: Vec<u32>, b: bool) -> u32 {
+fn get_rate_from_vec(input: &Vec<u32>, b: bool) -> u32 {
     input
         .iter()
         .fold(vec![0; LENGTH], |acc, bin| {
@@ -47,11 +47,11 @@ fn get_rate_from_vec(input: Vec<u32>, b: bool) -> u32 {
         })
 }
 
-fn find_rating(input: Vec<u32>, b: bool) -> u32 {
+fn find_rating(input: &Vec<u32>, b: bool) -> u32 {
     let mut pos = 1;
-    let mut vec: Vec<u32> = input;
+    let mut vec: Vec<u32> = input.clone();
     while vec.len() > 1 {
-        let pos_avg = vec.clone().into_iter().fold(0, |a, v| {
+        let pos_avg = vec.iter().fold(0, |a, v| {
             if v & (1 << (LENGTH - pos)) > 1 {
                 a + 1
             } else {
