@@ -1,36 +1,75 @@
-use itertools::join;
 use std::fs;
 
+const LENGTH: usize = 12;
+
 fn main() {
-    let gamma: Vec<u32> = fs::read_to_string("input.txt")
+    let input: Vec<u32> = fs::read_to_string("input.txt")
         .expect("Unable to  read file.")
         .lines()
-        .map(|l| {
-            l.chars()
-                .map(|c| c.to_digit(10).unwrap())
-                .collect::<Vec<u32>>()
-        })
-        .fold(vec![0; 6], |mut acc, vec| {
-            acc[0] += vec[0];
-            acc[1] += vec[1];
-            acc[2] += vec[2];
-            acc[3] += vec[3];
-            acc[4] += vec[4];
-            acc[5] += vec[5];
-            acc
-        })
-        .iter()
-        .map(|v| if v > &500 { 1 } else { 0 })
+        .map(|l| u32::from_str_radix(l, 2).unwrap())
         .collect();
 
-    let epsilon: Vec<u32> = gamma
-        .clone()
+    let (gamma, epsilon) = (
+        get_rate_from_vec(input.clone(), true),
+        get_rate_from_vec(input.clone(), false),
+    );
+
+    println!("Part 1: {}", gamma * epsilon);
+
+    let (ogr, csr) = (find_rating(input.clone(), true), find_rating(input, false));
+
+    println!("Part 2: {}", ogr * csr);
+}
+
+fn get_rate_from_vec(input: Vec<u32>, b: bool) -> u32 {
+    input
         .iter()
-        .map(|v| if v.eq(&1) { 0 } else { 1 })
-        .collect();
+        .fold(vec![0; LENGTH], |acc, bin| {
+            let mut t = acc.clone();
+            for (i, _el) in acc.clone().iter().enumerate() {
+                t[i] = {
+                    if bin & (1 << (LENGTH - i - 1)) > 1 {
+                        acc[i] + 1
+                    } else {
+                        acc[i]
+                    }
+                }
+            }
+            t
+        })
+        .iter()
+        .fold(0, |r: u32, v| {
+            if b == (&(v * 2) >= &(input.len())) {
+                !(!r << 1)
+            } else {
+                r << 1
+            }
+        })
+}
 
-    // https://doc.rust-lang.org/book/appendix-02-operators.html
-
-    println!("{:?}", gamma);
-    println!("{:?}", epsilon);
+fn find_rating(input: Vec<u32>, b: bool) -> u32 {
+    let mut pos = 1;
+    let mut vec: Vec<u32> = input;
+    while vec.len() > 1 {
+        let pos_avg = vec.clone().into_iter().fold(0, |a, v| {
+            if v & (1 << (LENGTH - pos)) > 1 {
+                a + 1
+            } else {
+                a
+            }
+        });
+        vec = vec
+            .clone()
+            .into_iter()
+            .filter(|x| {
+                if b == (pos_avg * 2 >= vec.len()) {
+                    x & (1 << (LENGTH - pos)) > 0
+                } else {
+                    !(x & (1 << (LENGTH - pos)) > 0)
+                }
+            })
+            .collect();
+        pos += 1;
+    }
+    vec[0]
 }
